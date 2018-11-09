@@ -14,7 +14,7 @@ Now the important packages
   :config (direnv-mode))
 #+END_SRC
 ** Emacs environment
-This is how you setup emacs with nix...
+This is how you setup emacs with nix, but you can skip it.
 #+BEGIN_SRC nix :tangle default.nix
 { pkgs ? import <nixpkgs> {} }:
 
@@ -35,33 +35,36 @@ in
 #+END_SRC
 ** Sample sandbox
 Direnv ~.envrc~ that enables per-dir automated environments
-#+BEGIN_SRC sh :tangle .envrs
+#+BEGIN_SRC sh :tangle .envrc
 use_nix
 #+END_SRC
 ~shell.nix~ env you put in project to predefine environment
 #+BEGIN_SRC nix :tangle shell.nix
-{pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
   buildInputs = with pkgs; [ direnv hello ];
   shellHook = ''
   eval $(direnv hook bash)
   direnv allow .
-  ./result/bin/emacs
   '';
 }
 #+END_SRC
-** Run
-Tangle and run
+** Running
 #+BEGIN_SRC sh :noexport
 nix build
 nix run
 #+END_SRC
-This gets you the pre-configured Emacs you've seen above.
-Next, in emacs open a buffer in within this repo, ie: ~scratch.el~ and run:
-#+BEGIN_SRC elisp :noexport
+Now run the delivered emacs w/ config (making sure you're running the right config) by
+#+BEGIN_SRC sh :noexport
+./result/bin/emacs -q -l default.el
+#+END_SRC
+This gets you the pre-configured Emacs you've seen above. Now run following steps in this repo buffer to see the ✨:
+#+BEGIN_SRC elisp :tangle verify.el
 (progn 
-(message (nix-current-sandbox))
-(message (shell-command-to-string "hello")
-(switch-to-buffer-other-window "*Messages*"))
+  (let ((tmp-buffer (generate-new-buffer "sample")))
+    (switch-to-buffer tmp-buffer))
+  (mesasage (concat "Sandbox: " (nix-current-sandbox)))
+  (message (concat "From sandbox: " (shell-command-to-string "hello")))
+  (switch-to-buffer-other-window "*Messages*"))
 #+END_SRC
