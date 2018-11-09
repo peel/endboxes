@@ -1,0 +1,67 @@
+* Emacs + Nix + Direnv = Sandbox
+** Emacs setup
+use-package setup...
+#+BEGIN_SRC elisp :tangle default.el
+(require 'package)
+(package-initialize 'noactivate)
+(eval-when-compile
+  (require 'use-package))
+#+END_SRC
+Now the important packages
+#+BEGIN_SRC elisp :tangle default.el
+(use-package nix-sandbox)
+(use-package direnv
+  :config (direnv-mode))
+#+END_SRC
+** Emacs environment
+This is how you setup emacs with nix...
+#+BEGIN_SRC nix :tangle default.nix
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  myEmacsConfig = ./default.el;
+  emacsWithPackages = (pkgs.emacsPackagesNgGen pkgs.emacs).emacsWithPackages;
+in
+  emacsWithPackages (epkgs: (with epkgs.melpaPackages; [
+    (pkgs.runCommand "default.el" {} ''
+    mkdir -p $out/share/emacs/site-lisp
+    cp ${myEmacsConfig} $out/share/emacs/site-lisp/default.el
+    '')
+    
+    use-package
+    direnv
+    nix-sandbox
+  ]))
+#+END_SRC
+** Sample sandbox
+Direnv ~.envrc~ that enables per-dir automated environments
+#+BEGIN_SRC sh :tangle .envrs
+use_nix
+#+END_SRC
+~shell.nix~ env you put in project to predefine environment
+#+BEGIN_SRC nix :tangle shell.nix
+{pkgs ? import <nixpkgs> {} }:
+
+pkgs.mkShell {
+  buildInputs = with pkgs; [ direnv hello ];
+  shellHook = ''
+  eval $(direnv hook bash)
+  direnv allow .
+  ./result/bin/emacs
+  '';
+}
+#+END_SRC
+** Run
+Tangle and run
+#+BEGIN_SRC sh :noexport
+nix build
+nix run
+#+END_SRC
+This gets you the pre-configured Emacs you've seen above.
+Next, in emacs open a buffer in within this repo, ie: ~scratch.el~ and run:
+#+BEGIN_SRC elisp :noexport
+(progn 
+(message (nix-current-sandbox))
+(message (shell-command-to-string "hello")
+(switch-to-buffer-other-window "*Messages*"))
+#+END_SRC
