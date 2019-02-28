@@ -59,7 +59,7 @@ Now run the delivered emacs w/ config (making sure you're running the right conf
 #+BEGIN_SRC sh :noexport
 ./result/bin/emacs -q -l default.el
 #+END_SRC
-This gets you the pre-configured Emacs you've seen above. Now run following steps in this repo buffer to see the ✨:
+This gets you the pre-configured Emacs you've seen above. Now run following steps in this repo buffer to see the:
 #+BEGIN_SRC elisp :tangle verify.el
 (progn 
   (let ((tmp-buffer (generate-new-buffer "sample")))
@@ -67,4 +67,9 @@ This gets you the pre-configured Emacs you've seen above. Now run following step
   (mesasage (concat "Sandbox: " (nix-current-sandbox)))
   (message (concat "From sandbox: " (shell-command-to-string "hello")))
   (switch-to-buffer-other-window "*Messages*"))
+#+END_SRC
+** One more thing
+A [[https://matthewbauer.us/blog/static-nix.html][statically linked]] nix can easily run the preconfigured setup anywhere:
+#+BEGIN_SRC sh :noexport
+curl https://matthewbauer.us/nix sh -s run --store $HOME/.cache/nix/store -f https://github.com/peel/emacs-nix-direnv-sample/archive/master.tar.gz -c emacs
 #+END_SRC
