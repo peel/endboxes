@@ -35,11 +35,11 @@ in
 #+END_SRC
 ** Sample sandbox
 Direnv ~.envrc~ that enables per-dir automated environments
-#+BEGIN_SRC sh :tangle .envrc
+#+BEGIN_SRC sh :tangle lorem-project/.envrc
 use_nix
 #+END_SRC
 ~shell.nix~ env you put in project to predefine environment
-#+BEGIN_SRC nix :tangle shell.nix
+#+BEGIN_SRC nix :tangle lorem-project/shell.nix
 { pkgs ? import <nixpkgs> {} }:
 
 pkgs.mkShell {
@@ -51,23 +51,20 @@ pkgs.mkShell {
 }
 #+END_SRC
 ** Running
-#+BEGIN_SRC sh :noexport
-nix build
-nix run
-#+END_SRC
-Now run the delivered emacs w/ config (making sure you're running the right config) by
-#+BEGIN_SRC sh :noexport
-./result/bin/emacs -q -l default.el
-#+END_SRC
-This gets you the pre-configured Emacs you've seen above. Now run following steps in this repo buffer to see the:
-#+BEGIN_SRC elisp :tangle verify.el
+Let's make sample project file:
+#+BEGIN_SRC elisp :tangle lorem-project/verify.el
 (progn 
   (let ((tmp-buffer (generate-new-buffer "sample")))
     (switch-to-buffer tmp-buffer))
-  (mesasage (concat "Sandbox: " (nix-current-sandbox)))
+  (message (concat "Sandbox: " (nix-current-sandbox)))
   (message (concat "From sandbox: " (shell-command-to-string "hello")))
   (switch-to-buffer-other-window "*Messages*"))
 #+END_SRC
+Now run the delivered emacs w/ config (making sure you're running the right config) and open the file within the project's sandbox:
+#+BEGIN_SRC sh :noexport
+nix run -c emacs -q -l default.el lorem-project/verify.el
+#+END_SRC
+This gets you the pre-configured Emacs you've seen above. Now execute the buffer and see the sandbox info with ~hello~ package on it.
 ** One more thing
 A [[https://matthewbauer.us/blog/static-nix.html][statically linked]] nix can easily run the preconfigured setup anywhere:
 #+BEGIN_SRC sh :noexport
